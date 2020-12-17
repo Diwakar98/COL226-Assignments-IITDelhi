@@ -1,0 +1,59 @@
+hastype([(x,int),(y,int)],add(x,y),T).
+hastype([(x,bool),(y,bool)],or(x,y),T).
+hastype([(var(X),alpha)|Rest],var(X),T).
+hastype([(num(X),beta)|Rest],num(X),T).
+hastype([(x,int),(y,int),(z,int),(w,int)],equal(add(x,y),div(w,z)),T).
+hastype([(x,bool),(y,bool),(z,bool)],or(x,and(y,z)),T).
+hastype([],and(true,false),T).
+hastype([(x,bool)],x,T).
+hastype([(x,bool),(y,bool),(z,bool)],and(x,or(y,z)),T).
+hastype([(x,int),(y,int),(w,bool),(z,bool),(a,int),(b,int)] , add(if(if(greater(x,y),w,z),a,b),if(lesser(a,b),mul(x,y),sub(x,y))) , T).
+hastype([(x,int),(y,int),(w,bool),(z,bool),(a,int),(b,int)] , equal(add(if(if(greater(x,y),w,z),a,b),if(lesser(a,b),mul(x,y),sub(x,y))),incr(y)) , T).
+hastype([(x,int),(y,int),(w,bool),(z,bool),(a,int),(b,int)] , (equal(add(if(if(greater(x,y),w,z),a,b),if(lesser(a,b),mul(x,y),sub(x,y))),incr(y)),add(if(if(greater(x,y),w,z),a,b),if(lesser(a,b),mul(x,y),sub(x,y)))) , T).
+
+hastype([(x,int)],letin(def(x,true),x),T).
+typeElaborates([(x,int)],def(x,true),T).
+hastype([(x,int)],if(letin(def(x,true),equal(x,x)),x,x),T).
+hastype([(x,int)],letin(def(x,equal(x,x)),x),T).
+hastype([(x,int)],letin(def(x,add(x,5)),mul(x,x)),T).
+hastype([(x,int),(y,int),(z,int)],letin(def(x,equal(x,x)),if(x,true,false)),T).
+hastype([(x,int),(y,int),(z,int)],letin(def(x,greater(x,x)),if(x,0,1)),T).
+hastype([(x,int),(y,int),(z,int)],letin(def(x,lesser(x,x)),if(x,y,2)),T).
+hastype([(x,int),(y,int),(z,int)],letin(def(x,greaterorequal(x,0)),if(x,add(y,1),sub(2,z))),T).
+hastype([(x,int),(y,int),(c1,char),(c2,char)],letin(def(x,add(x,1)),if(equal(c1,c2),x,y)),T).
+hastype([(x,int),(y,int),(z,int),(f1,float),(f2,float)],add(letin(def(x,equal(f1,f2)),if(x,y,2)),x),T).
+hastype([(x,int),(y,int)],func(x,add(x,2)),T).
+hastype([(x,int),(y,int)],func(x,greater(x,2)),T).
+hastype([(x,int),(y,int)],(equal(x,y),func(x,func(x,mul(x,y)))),T).
+typeElaborates([(x,int),(y,int)],def(z,equal(x,mul(x,y))),T).
+typeElaborates([(x,int),(y,int)],def(z,(letin(def(p,mul(x,y)),p),func(x,add(x,2)))),T). ///Manage tuples
+hastype([(x,int),(y,char),(z,bool),(w,int),(p,char)],(letin(def(x,equal(y,p)),not(x)),add(x,w),greater(x,w),z,p,equal(y,p)),T).
+
+typeElaborates([(x,int),(y,int)],parallel(def(z,add(x,y)) , def(w,add(x,y))), Gamma).
+typeElaborates([(x,int),(y,int)],letin(sequential(def(x,y),def(y,x)),add(x,y)),Gamma).
+typeElaborates([(x,int),(y,int)],parallel(def(x,y),def(y,x)),Gamma).
+typeElaborates([(x,int),(y,int),(z,bool)],sequential(def(p,add(x,y)),def(q,equal(x,y))),Gamma).
+
+typeElaborates([(x,int),(y,int),(z,bool)],sequential(def(p,add(x,y)),sequential(def(p,equal(x,y)),def(q,equal(x,y)))),Gamma). //IMPORTANT
+
+typeElaborates([(x,int),(y,int),(z,bool)],parallel(def(p,add(x,y)),sequential(def(p,equal(x,y)),def(q,equal(x,y)))),Gamma). //IMPORTANT
+
+typeElaborates([(x,int),(y,int)],parallel(def(z,func(x,add(x,3))) , def(w,add(x,y))), Gamma).
+
+typeElaborates([(x,int),(y,int)],parallel( def(z,add(x,y)) , def(w,lesser(x,y))), Gamma).
+
+typeElaborates([(x,int),(y,int)],parallel( def(z,add(x,y)) , def(z,lesser(x,y))), Gamma). //FALSE
+
+typeElaborates([(x,int),(y,int)],parallel(sequential(def(p,mul(x,x)),def(q,add(x,2))) , def(w,(incr(x),lesser(x,y)))), Gamma).
+
+typeElaborates([(x,int),(y,int)],sequential(parallel(def(p,mul(x,x)),def(q,add(p,2))) , def(w,(incr(x),lesser(x,y)))), Gamma). 
+
+typeElaborates([(x,int),(y,int)],parallel(sequential(def(p,add(x,y)),def(q,equal(x,y))) , def(z,func(x,add(x,3)))), Gamma).
+
+typeElaborates([(x,int),(y,int)],parallel(sequential(def(p,add(x,y)),def(q,equal(x,y))) , def(p,func(x,add(x,3)))), Gamma).
+
+typeElaborates([(x,int),(y,int)],local(def(z,add(x,y)),def(f,func(y,equal(y,z)))),Gamma).
+
+typeElaborates([(x,bool),(y,bool)],parallel(def(p,or(x,y)),def(q,(3,4,x,y))),Gamma).
+
+typeElaborates([(x,bool),(y,bool)],parallel(local(def(m,or(x,y)),def(p,or(m,y))),def(q,add(3,4))),Gamma).
